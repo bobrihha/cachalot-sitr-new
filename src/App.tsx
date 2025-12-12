@@ -4,6 +4,7 @@ import SpecGenerator from './components/SpecGenerator';
 import ChatWidget from './components/ChatWidget';
 import Philosophy from './components/Philosophy';
 import Services from './components/Services';
+import Cases from './components/Cases'; // Импортируем новый компонент
 
 function App() {
     return (
@@ -32,10 +33,8 @@ function App() {
                 <Philosophy />
                 <Services />
 
-                {/* Блок-заглушка для Кейсов (Следующий этап) */}
-                <section id="cases" className="py-20 border-t border-white/5 text-center">
-                    <p className="text-slate-500 font-mono">[ Здесь будет блок "Кейсы" ]</p>
-                </section>
+                {/* Секция Кейсов */}
+                <Cases />
 
                 {/* Генератор ТЗ */}
                 <section className="py-24 relative">
