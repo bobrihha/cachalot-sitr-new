@@ -1,58 +1,154 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, ExternalLink, ArrowRight, Server, MessageSquare, BarChart3, Globe, Database } from 'lucide-react';
+import type { Lang } from '../site';
 
-// Данные кейсов
-const cases = [
-    {
-        id: 1,
-        title: "Jungle Park Ecosystem",
-        category: "Enterprise Automation",
-        description: "Омниканальная система для сети парков развлечений. Единое окно для операторов и AI-консультант.",
-        tags: ["AmoCRM", "Python", "Telegram API", "VK API"],
-        details: "Разработана архитектура, объединяющая сообщения с сайта, Telegram и ВКонтакте в одну воронку AmoCRM. Внедрен AI-бот, который квалифицирует лиды, снимая 40% нагрузки с колл-центра.",
-        icon: <MessageSquare className="text-neon-cyan" size={32} />
-    },
-    {
-        id: 2,
-        title: "Cachalot Assistant",
-        category: "AI Development",
-        description: "Цифровой сотрудник, работающий прямо на этом сайте. Демонстрация технологии «Сапожник с сапогами».",
-        tags: ["Gemini 2.0", "React", "Voice Recognition"],
-        details: "Бот интегрирован в frontend сайта и связан с Python-бэкендом. Умеет вести диалог по сценарию, отвечать на свободные вопросы о компании и собирать контакты. Поддерживает голосовой ввод.",
-        icon: <Server className="text-neon-purple" size={32} />
-    },
-    {
-        id: 3,
-        title: "Content AI Pipeline",
-        category: "Marketing Tech",
-        description: "Автоматическая генерация SEO-статей из YouTube видео. Экономия 20+ часов работы редактора.",
-        tags: ["Whisper AI", "Parsing", "Content Gen"],
-        details: "Бот получает ссылку на видео, транскрибирует голос в текст, структурирует его, выделяет главные мысли и формирует готовую HTML-статью для блога.",
-        icon: <Globe className="text-blue-400" size={32} />
-    },
-    {
-        id: 4,
-        title: "Web3 Trading Bot",
-        category: "Fintech",
-        description: "Интерфейс управления высоконагруженным торговым роботом. Аналитика в реальном времени.",
-        tags: ["Web3", "Blockchain", "React Admin"],
-        details: "Панель управления для трейдера. Отображение графиков доходности, управление кошельками и настройка стратегий торговли в один клик. Безопасное подключение через API.",
-        icon: <BarChart3 className="text-green-400" size={32} />
-    },
-    {
-        id: 5,
-        title: "Bitrix24 Webhooks",
-        category: "Integration",
-        description: "Система мгновенного распределения заявок. Данные с лендингов сразу попадают к менеджерам.",
-        tags: ["Bitrix24", "Webhooks", "FastAPI"],
-        details: "Написан микросервис-прослойка, который ловит данные с форм Tilda/WordPress, проверяет их на дубли и создает сложные сущности в CRM, автоматически назначая ответственного менеджера.",
-        icon: <Database className="text-orange-400" size={32} />
-    }
-];
+type CaseItem = {
+    id: number;
+    title: string;
+    category: string;
+    problem: string;
+    solution: string;
+    result: string;
+    tags: string[];
+    icon: React.ReactNode;
+};
 
-const Cases = () => {
-    const [selectedCase, setSelectedCase] = useState<typeof cases[0] | null>(null);
+const casesByLang: Record<Lang, CaseItem[]> = {
+    ru: [
+        {
+            id: 1,
+            title: "Jungle Park Ecosystem",
+            category: "Enterprise Automation",
+            tags: ["AmoCRM", "Python", "Telegram API", "VK API"],
+            problem: "Обращения шли из разных каналов, заявки терялись, а операторы перегружались.",
+            solution: "Собрали единое окно для коммуникаций и подключили AI, который квалифицирует и распределяет обращения.",
+            result: "Меньше ручной рутины и быстрее ответы; нагрузка на колл‑центр снизилась примерно на 40%.",
+            icon: <MessageSquare className="text-neon-cyan" size={32} />
+        },
+        {
+            id: 2,
+            title: "Cachalot Assistant",
+            category: "AI Development",
+            tags: ["Gemini 2.0", "React", "Voice Recognition"],
+            problem: "Посетители не получали быстрый ответ и часто уходили без контакта.",
+            solution: "Встроили AI‑помощника на сайт: отвечает на вопросы, подсказывает следующий шаг и собирает данные.",
+            result: "Ответы 24/7 и меньше ручной поддержки; выше вовлечённость и конверсия в обращение.",
+            icon: <Server className="text-neon-purple" size={32} />
+        },
+        {
+            id: 3,
+            title: "Content AI Pipeline",
+            category: "Marketing Tech",
+            tags: ["Whisper AI", "Parsing", "Content Gen"],
+            problem: "Подготовка статей из видео занимала часы и тормозила контент‑план.",
+            solution: "Собрали пайплайн: из ссылки на видео получаем структуру и готовый черновик статьи.",
+            result: "Экономия 20+ часов работы редактора; стабильный выпуск контента без провалов.",
+            icon: <Globe className="text-blue-400" size={32} />
+        },
+        {
+            id: 4,
+            title: "Web3 Trading Bot",
+            category: "Fintech",
+            tags: ["Web3", "Blockchain", "React Admin"],
+            problem: "Не хватало прозрачности: сложно быстро понять, что происходит, и вовремя реагировать.",
+            solution: "Сделали панель контроля: статусы, ключевые метрики и управление настройками в одном месте.",
+            result: "Быстрее принятие решений и меньше ошибок; контроль в реальном времени без переключения между системами.",
+            icon: <BarChart3 className="text-green-400" size={32} />
+        },
+        {
+            id: 5,
+            title: "Bitrix24 Webhooks",
+            category: "Integration",
+            tags: ["Bitrix24", "Webhooks", "FastAPI"],
+            problem: "Заявки с форм приходили с задержкой, терялись и дублировались.",
+            solution: "Автоматизировали приём: проверка на дубли, создание карточек и распределение по менеджерам.",
+            result: "Мгновенная доставка лидов в CRM и меньше дублей; быстрее первая реакция и меньше хаоса.",
+            icon: <Database className="text-orange-400" size={32} />
+        }
+    ],
+    en: [
+        {
+            id: 1,
+            title: "Jungle Park Ecosystem",
+            category: "Enterprise Automation",
+            tags: ["AmoCRM", "Python", "Telegram API", "VK API"],
+            problem: "Requests came from multiple channels; leads were lost and operators were overloaded.",
+            solution: "Built a single workspace for communication and added AI to qualify and route requests.",
+            result: "Less manual work and faster replies; call center load dropped by ~40%.",
+            icon: <MessageSquare className="text-neon-cyan" size={32} />
+        },
+        {
+            id: 2,
+            title: "Cachalot Assistant",
+            category: "AI Development",
+            tags: ["Gemini 2.0", "React", "Voice Recognition"],
+            problem: "Visitors didn’t get quick answers and left without leaving contacts.",
+            solution: "Embedded an AI assistant on the website: answers questions, suggests next steps, and collects details.",
+            result: "24/7 responses and less manual support; higher engagement and more qualified inquiries.",
+            icon: <Server className="text-neon-purple" size={32} />
+        },
+        {
+            id: 3,
+            title: "Content AI Pipeline",
+            category: "Marketing Tech",
+            tags: ["Whisper AI", "Parsing", "Content Gen"],
+            problem: "Turning videos into articles took hours and slowed down the content plan.",
+            solution: "Built a pipeline that turns a video link into a structured draft article.",
+            result: "Saved 20+ hours of editor time; consistent content output without gaps.",
+            icon: <Globe className="text-blue-400" size={32} />
+        },
+        {
+            id: 4,
+            title: "Trading Operations Dashboard",
+            category: "Operations",
+            tags: ["Web3", "Blockchain", "React Admin"],
+            problem: "Lack of transparency made it hard to react quickly and avoid mistakes.",
+            solution: "Delivered a control panel with statuses, key metrics, and management in one place.",
+            result: "Faster decisions and fewer errors; real-time control without switching between tools.",
+            icon: <BarChart3 className="text-green-400" size={32} />
+        },
+        {
+            id: 5,
+            title: "Bitrix24 Webhooks",
+            category: "Integration",
+            tags: ["Bitrix24", "Webhooks", "FastAPI"],
+            problem: "Form leads arrived with delays, got lost, and were duplicated.",
+            solution: "Automated intake: deduplication, creating CRM entries, and routing to the right manager.",
+            result: "Instant lead delivery into CRM and fewer duplicates; faster first response and less chaos.",
+            icon: <Database className="text-orange-400" size={32} />
+        }
+    ]
+};
+
+type CasesProps = {
+    lang: Lang;
+};
+
+const Cases = ({ lang }: CasesProps) => {
+    const [selectedCase, setSelectedCase] = useState<CaseItem | null>(null);
+    const cases = casesByLang[lang];
+    const labels = lang === 'en'
+        ? {
+            badge: 'Case studies',
+            title1: 'Systems',
+            title2: 'delivered',
+            problem: 'Problem:',
+            solution: 'Solution:',
+            result: 'Outcome:',
+            more: 'Read more',
+            action: 'Pick an AI solution'
+        }
+        : {
+            badge: 'Портфолио',
+            title1: 'Реализованные',
+            title2: 'Системы',
+            problem: 'Проблема:',
+            solution: 'Решение:',
+            result: 'Результат:',
+            more: 'Подробнее',
+            action: 'Подобрать AI-решение'
+        };
 
     return (
         <section id="cases" className="py-24 relative bg-ocean-950">
@@ -65,9 +161,9 @@ const Cases = () => {
                     viewport={{ once: true }}
                     className="text-center mb-16"
                 >
-                    <span className="text-neon-cyan tracking-widest uppercase text-sm font-bold">Портфолио</span>
+                    <span className="text-neon-cyan tracking-widest uppercase text-sm font-bold">{labels.badge}</span>
                     <h2 className="text-3xl md:text-5xl font-bold text-white mt-2">
-                        Реализованные <span className="text-transparent bg-clip-text bg-gradient-to-r from-neon-purple to-neon-cyan">Системы</span>
+                        {labels.title1} <span className="text-transparent bg-clip-text bg-gradient-to-r from-neon-purple to-neon-cyan">{labels.title2}</span>
                     </h2>
                 </motion.div>
 
@@ -86,18 +182,22 @@ const Cases = () => {
                             </div>
 
                             <h3 className="text-xl font-bold text-white mb-2">{item.title}</h3>
-                            <p className="text-slate-400 text-sm mb-6 line-clamp-3">{item.description}</p>
+                            <div className="text-slate-400 text-sm mb-6 space-y-2">
+                                <p><span className="text-slate-300/90 font-semibold">{labels.problem}</span> {item.problem}</p>
+                                <p><span className="text-slate-300/90 font-semibold">{labels.solution}</span> {item.solution}</p>
+                                <p><span className="text-slate-300/90 font-semibold">{labels.result}</span> {item.result}</p>
+                            </div>
 
                             <div className="flex flex-wrap gap-2 mb-4">
                                 {item.tags.slice(0, 3).map(tag => (
-                                    <span key={tag} className="text-[10px] uppercase tracking-wider px-2 py-1 rounded bg-white/5 text-slate-300 border border-white/5">
+                                    <span key={tag} className="text-[10px] uppercase tracking-wider px-2 py-1 rounded bg-white/5 text-slate-500 border border-white/5">
                                         {tag}
                                     </span>
                                 ))}
                             </div>
 
                             <div className="flex items-center text-neon-cyan text-sm font-bold opacity-0 group-hover:opacity-100 transition-opacity transform translate-y-2 group-hover:translate-y-0">
-                                Подробнее <ArrowRight size={16} className="ml-2" />
+                                {labels.more} <ArrowRight size={16} className="ml-2" />
                             </div>
                         </motion.div>
                     ))}
@@ -135,23 +235,26 @@ const Cases = () => {
                                 </span>
                                 <h3 className="text-3xl font-bold text-white mb-6">{selectedCase.title}</h3>
 
-                                <div className="prose prose-invert prose-p:text-slate-300 mb-8">
-                                    <p>{selectedCase.details}</p>
+                                <div className="text-slate-300/90 font-light leading-relaxed mb-8 space-y-4">
+                                    <p><span className="text-slate-200 font-semibold">{labels.problem}</span> {selectedCase.problem}</p>
+                                    <p><span className="text-slate-200 font-semibold">{labels.solution}</span> {selectedCase.solution}</p>
+                                    <p><span className="text-slate-200 font-semibold">{labels.result}</span> {selectedCase.result}</p>
                                 </div>
 
                                 <div className="flex flex-wrap gap-2 mb-8">
                                     {selectedCase.tags.map(tag => (
-                                        <span key={tag} className="px-3 py-1.5 rounded-lg bg-neon-cyan/10 text-neon-cyan text-xs font-mono border border-neon-cyan/20">
+                                        <span key={tag} className="px-3 py-1.5 rounded-lg bg-white/5 text-slate-400 text-xs font-mono border border-white/10">
                                             #{tag}
                                         </span>
                                     ))}
                                 </div>
 
-                                <button
+                                <a
+                                    href="#ai-architect"
                                     className="w-full py-4 bg-white text-ocean-950 font-bold rounded-xl hover:bg-neon-cyan transition-colors flex items-center justify-center gap-2"
                                 >
-                                    Обсудить похожее решение <ExternalLink size={18} />
-                                </button>
+                                    {labels.action} <ExternalLink size={18} />
+                                </a>
                             </div>
                         </motion.div>
                     </div>

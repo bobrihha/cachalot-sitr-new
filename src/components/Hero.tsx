@@ -1,12 +1,48 @@
 import { motion } from 'framer-motion';
 import { ChevronDown, Brain, Database, Layers } from 'lucide-react';
+import type { Lang } from '../site';
 
-const Hero = () => {
+type HeroProps = {
+    lang: Lang;
+};
+
+const Hero = ({ lang }: HeroProps) => {
+    const t = lang === 'en'
+        ? {
+            brandWord: 'DEPTH',
+            badge: 'CACHALOT • AI SYSTEMS FOR BUSINESS',
+            h1: 'AI assistants that bring order and visibility to your business.',
+            subtitle: 'Contracts, policies, messages, and deadlines — what usually gets lost across chats and CRMs becomes searchable in seconds.',
+            micro: 'For small businesses and teams. Ready-to-use solutions without a heavy rollout.',
+            primary: 'Pick an AI solution',
+            secondary: 'See case studies',
+            icon1: 'AI assistants',
+            icon2: 'CRM + visibility',
+            icon3: 'Automation'
+        }
+        : {
+            brandWord: 'ГЛУБИНА',
+            badge: 'CACHALOT • AI SYSTEMS FOR BUSINESS',
+            h1: 'AI-помощники для порядка и контроля в бизнесе.',
+            subtitle: 'Контрагенты, договоры, регламенты, нормы, переписки и сроки — всё, что обычно теряется в чатах и CRM, становится доступно за секунды.',
+            micro: 'Подходит малому бизнесу и компаниям. Есть готовые решения без сложных внедрений.',
+            primary: 'Подобрать AI-решение',
+            secondary: 'Посмотреть примеры',
+            icon1: 'AI-помощники',
+            icon2: 'CRM + контроль',
+            icon3: 'Автоматизация'
+        };
+
     return (
         <section className="relative min-h-screen flex flex-col items-center justify-center px-4 overflow-hidden">
 
             {/* Декор: Свечение из глубины */}
             <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-neon-cyan/10 rounded-full blur-[120px] animate-pulse-slow"></div>
+
+            {/* Декоративное слово бренда */}
+            <div className="pointer-events-none absolute top-16 md:top-12 left-1/2 -translate-x-1/2 text-5xl md:text-7xl lg:text-8xl font-black text-slate-500/10 tracking-tight">
+                {t.brandWord}
+            </div>
 
             <div className="z-10 max-w-5xl text-center space-y-8">
 
@@ -21,7 +57,7 @@ const Hero = () => {
                         <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-neon-cyan opacity-75"></span>
                         <span className="relative inline-flex rounded-full h-2 w-2 bg-neon-cyan"></span>
                     </span>
-                    Cachalot Digital Lab
+                    {t.badge}
                 </motion.div>
 
                 {/* Заголовок */}
@@ -29,21 +65,9 @@ const Hero = () => {
                     initial={{ opacity: 0, y: 30 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.8, delay: 0.2 }}
-                    className="text-3xl md:text-5xl lg:text-6xl font-black text-slate-200 tracking-tight"
+                    className="text-3xl md:text-5xl lg:text-6xl font-black text-white tracking-tight"
                 >
-                    <span className="signal-text">
-                        {'ГЛУБИНА'.split('').map((letter, idx) => (
-                            <span
-                                key={idx}
-                                className="char"
-                                data-char={letter}
-                                style={{ animationDelay: `${-idx * 0.27}s` }}
-                            >
-                                {letter}
-                            </span>
-                        ))}
-                    </span>
-                    <span className="text-neon-cyan">.</span>
+                    {t.h1}
                 </motion.h1>
 
                 {/* Подзаголовок */}
@@ -53,8 +77,16 @@ const Hero = () => {
                     transition={{ duration: 0.8, delay: 0.4 }}
                     className="text-lg md:text-2xl text-slate-400 max-w-2xl mx-auto font-light leading-relaxed"
                 >
-                    Интеллектуальная автоматизация бизнеса. Создаём AI‑сотрудников и берём на себя процессы,<br className="hidden md:block" />
-                    куда другие не ныряют.
+                    {t.subtitle}
+                </motion.p>
+
+                <motion.p
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    transition={{ duration: 0.8, delay: 0.6 }}
+                    className="text-xs md:text-sm text-slate-500 max-w-2xl mx-auto"
+                >
+                    {t.micro}
                 </motion.p>
 
                 {/* Кнопки */}
@@ -64,12 +96,12 @@ const Hero = () => {
                     transition={{ duration: 0.8, delay: 0.6 }}
                     className="flex flex-col sm:flex-row gap-4 justify-center items-center pt-8"
                 >
-                    <button className="px-8 py-4 bg-neon-cyan text-ocean-950 font-bold text-lg rounded-xl hover:bg-cyan-400 transition-all shadow-[0_0_20px_rgba(6,182,212,0.4)] hover:scale-105">
-                        Смотреть Кейсы
-                    </button>
-                    <button className="px-8 py-4 border border-slate-700 text-slate-300 font-medium text-lg rounded-xl hover:bg-white/5 hover:border-neon-cyan/50 transition-all backdrop-blur-sm">
-                        Тест-драйв AI
-                    </button>
+                    <a href="#ai-architect" className="px-8 py-4 bg-neon-cyan text-ocean-950 font-bold text-lg rounded-xl hover:bg-cyan-400 transition-all shadow-[0_0_20px_rgba(6,182,212,0.4)] hover:scale-105">
+                        {t.primary}
+                    </a>
+                    <a href="#cases" className="px-8 py-4 border border-slate-700 text-slate-300 font-medium text-lg rounded-xl hover:bg-white/5 hover:border-neon-cyan/50 transition-all backdrop-blur-sm">
+                        {t.secondary}
+                    </a>
                 </motion.div>
             </div>
 
@@ -80,9 +112,9 @@ const Hero = () => {
                 transition={{ delay: 1, duration: 1 }}
                 className="absolute bottom-12 flex gap-12 text-slate-600"
             >
-                <div className="flex flex-col items-center gap-2 hover:text-neon-cyan transition-colors"><Brain size={24} /> <span className="text-[10px] tracking-widest uppercase">AI Core</span></div>
-                <div className="flex flex-col items-center gap-2 hover:text-neon-cyan transition-colors"><Database size={24} /> <span className="text-[10px] tracking-widest uppercase">CRM</span></div>
-                <div className="flex flex-col items-center gap-2 hover:text-neon-cyan transition-colors"><Layers size={24} /> <span className="text-[10px] tracking-widest uppercase">Web3</span></div>
+                <div className="flex flex-col items-center gap-2 hover:text-neon-cyan transition-colors"><Brain size={24} /> <span className="text-[10px] tracking-widest uppercase">{t.icon1}</span></div>
+                <div className="flex flex-col items-center gap-2 hover:text-neon-cyan transition-colors"><Database size={24} /> <span className="text-[10px] tracking-widest uppercase">{t.icon2}</span></div>
+                <div className="flex flex-col items-center gap-2 hover:text-neon-cyan transition-colors"><Layers size={24} /> <span className="text-[10px] tracking-widest uppercase">{t.icon3}</span></div>
             </motion.div>
 
             {/* Стрелка вниз */}

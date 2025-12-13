@@ -1,6 +1,33 @@
 import { Send, Mail, Github, MessageCircle } from 'lucide-react';
+import { approachPath, homePath, type Lang, type Page } from '../site';
 
-const Footer = () => {
+type FooterProps = {
+    lang: Lang;
+    page: Page;
+};
+
+const Footer = ({ lang, page }: FooterProps) => {
+    const isApproachPage = page === 'approach';
+    const homeHref = homePath(lang);
+    const approachHref = approachPath(lang);
+    const t = lang === 'en'
+        ? {
+            title1: 'Ready to dive',
+            title2: 'deeper?',
+            text: 'Tell us what you want to improve. We’ll propose a practical AI setup for your business.',
+            navApproach: 'Approach',
+            navSolutions: 'Solutions',
+            navCases: 'Cases'
+        }
+        : {
+            title1: 'Готовы нырнуть',
+            title2: 'глубже?',
+            text: 'Обсудим вашу задачу. Мы найдем решение там, где другие видят только темную воду.',
+            navApproach: 'Подход',
+            navSolutions: 'Решения',
+            navCases: 'Кейсы'
+        };
+
     return (
         <footer className="relative bg-ocean-950 pt-20 pb-10 border-t border-white/5 overflow-hidden">
 
@@ -13,11 +40,11 @@ const Footer = () => {
                 <div className="grid md:grid-cols-2 gap-12 items-center mb-16">
                     <div>
                         <h2 className="text-4xl md:text-5xl font-bold text-white mb-6">
-                            Готовы нырнуть <br />
-                            <span className="text-neon-cyan">глубже?</span>
+                            {t.title1} <br />
+                            <span className="text-neon-cyan">{t.title2}</span>
                         </h2>
                         <p className="text-slate-400 text-lg max-w-md">
-                            Обсудим вашу задачу. Мы найдем решение там, где другие видят только темную воду.
+                            {t.text}
                         </p>
                     </div>
 
@@ -54,9 +81,9 @@ const Footer = () => {
 
                     {/* Ссылки */}
                     <div className="flex gap-8 text-sm font-medium text-slate-500">
-                        <a href="#about" className="hover:text-neon-cyan transition-colors">Философия</a>
-                        <a href="#services" className="hover:text-neon-cyan transition-colors">Услуги</a>
-                        <a href="#cases" className="hover:text-neon-cyan transition-colors">Кейсы</a>
+                        <a href={approachHref} className="hover:text-neon-cyan transition-colors">{t.navApproach}</a>
+                        <a href={isApproachPage ? `${homeHref}#services` : '#services'} className="hover:text-neon-cyan transition-colors">{t.navSolutions}</a>
+                        <a href={isApproachPage ? `${homeHref}#cases` : '#cases'} className="hover:text-neon-cyan transition-colors">{t.navCases}</a>
                     </div>
 
                     {/* Соцсети / Github */}

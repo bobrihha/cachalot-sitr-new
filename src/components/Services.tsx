@@ -1,35 +1,66 @@
-import { Bot, Network, Workflow } from 'lucide-react';
+import { Bot, ClipboardCheck, Workflow } from 'lucide-react';
 import { motion } from 'framer-motion';
+import type { Lang } from '../site';
 
-const services = [
-    {
-        icon: <Bot size={40} />,
-        title: "AI Staff & Voice",
-        desc: "Цифровые сотрудники, заменяющие колл-центр. Понимают контекст, говорят голосом, работают 24/7 в Telegram и WhatsApp."
-    },
-    {
-        icon: <Workflow size={40} />,
-        title: "CRM Integration",
-        desc: "Нервная система бизнеса. Глубокая связка AmoCRM/Bitrix24 с сайтом. Автоматическая квалификация и ведение лидов."
-    },
-    {
-        icon: <Network size={40} />,
-        title: "Web3 & Fintech",
-        desc: "Торговые роботы, смарт-контракты и мониторинг блокчейна. Безопасные интерфейсы для работы с криптовалютой."
-    }
-];
+type ServicesProps = {
+    lang: Lang;
+};
 
-const Services = () => {
+const Services = ({ lang }: ServicesProps) => {
+    const t = lang === 'en'
+        ? {
+            label: 'Solutions',
+            title: 'What AI can take over in your business',
+            cards: [
+                {
+                    icon: <Bot size={40} />,
+                    title: 'An internal AI assistant for your team',
+                    desc: 'Keeps track of clients, contracts, and meeting outcomes — and answers employee questions without digging through chats, files, and CRMs.'
+                },
+                {
+                    icon: <Workflow size={40} />,
+                    title: 'CRM and process visibility',
+                    desc: 'Automatic summaries, deal statuses, alerts, and simple analytics — leaders see what’s happening without manual reporting.'
+                },
+                {
+                    icon: <ClipboardCheck size={40} />,
+                    title: 'Automation of routine tasks',
+                    desc: 'AI handles repetitive ops, checks, replies, and basic data processing — freeing up your team’s time.'
+                }
+            ]
+        }
+        : {
+            label: 'Возможности',
+            title: 'Что AI может взять на себя в вашем бизнесе',
+            cards: [
+                {
+                    icon: <Bot size={40} />,
+                    title: 'Внутренний AI-помощник для команды',
+                    desc: 'Помнит контрагентов, договоры, итоги встреч и отвечает сотрудникам вместо поисков по чатам, файлам и CRM.'
+                },
+                {
+                    icon: <Workflow size={40} />,
+                    title: 'CRM и контроль процессов',
+                    desc: 'Автоматические отчёты, статусы сделок, уведомления и аналитика — руководитель видит реальную картину без ручной работы.'
+                },
+                {
+                    icon: <ClipboardCheck size={40} />,
+                    title: 'Автоматизация рутинных задач',
+                    desc: 'AI берёт на себя типовые операции, проверки, ответы и обработку данных, освобождая время команды.'
+                }
+            ]
+        };
+
     return (
         <section id="services" className="py-20 bg-ocean-950 relative">
             <div className="max-w-7xl mx-auto px-6">
                 <div className="text-center mb-16">
-                    <span className="text-neon-cyan tracking-widest uppercase text-sm font-bold">Экосистема</span>
-                    <h2 className="text-3xl md:text-4xl font-bold text-white mt-2">Наши Модули</h2>
+                    <span className="text-neon-cyan tracking-widest uppercase text-sm font-bold">{t.label}</span>
+                    <h2 className="text-3xl md:text-4xl font-bold text-white mt-2">{t.title}</h2>
                 </div>
 
                 <div className="grid md:grid-cols-3 gap-8">
-                    {services.map((service, index) => (
+                    {t.cards.map((service, index) => (
                         <motion.div
                             key={index}
                             initial={{ opacity: 0, y: 30 }}
