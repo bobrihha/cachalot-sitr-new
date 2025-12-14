@@ -5,12 +5,15 @@ import SpecGenerator from './components/SpecGenerator';
 import SolutionScenarios from './components/SolutionScenarios';
 import GettingStarted from './components/GettingStarted';
 import PricingFormats from './components/PricingFormats';
-import ChatWidget from './components/ChatWidget';
+import { ChatWidget } from './components/ChatWidget';
 import ApproachPage from './components/ApproachPage';
 import Services from './components/Services';
 import Cases from './components/Cases';
-import Footer from './components/Footer'; // <-- Импортируем Footer
+import { AdminPanel } from './components/AdminPanel';
+import Footer from './components/Footer';
 import { approachPath, homePath, type Lang, type Page } from './site';
+import ModulesGrid from './components/ModulesGrid';
+import MemorySection from './components/MemorySection';
 
 type AppProps = {
     lang: Lang;
@@ -32,11 +35,15 @@ function App({ lang, page }: AppProps) {
         }
         : {
             approach: 'Подход',
-            services: 'Решения',
-            pricing: 'Цены',
             cases: 'Кейсы',
             cta: 'Подобрать AI-решение'
         };
+
+
+    // Simple custom routing for Admin Panel
+    if (window.location.pathname === '/admin') {
+        return <AdminPanel />;
+    }
 
     return (
         <div className="min-h-screen text-slate-200 selection:bg-neon-cyan selection:text-ocean-950 font-sans">
@@ -89,6 +96,9 @@ function App({ lang, page }: AppProps) {
                     <SolutionScenarios lang={lang} />
 
                     <GettingStarted lang={lang} />
+
+                    <ModulesGrid lang={lang} />
+                    <MemorySection lang={lang} />
 
                     {/* AI Architect (главный вход) */}
                     <section id="ai-architect" className="py-28 md:py-32 relative">

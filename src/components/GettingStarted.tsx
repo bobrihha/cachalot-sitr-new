@@ -49,7 +49,13 @@ const GettingStarted = ({ lang }: GettingStartedProps) => {
                     className="max-w-4xl mx-auto"
                 >
                     <div className="text-center mb-8">
-                        <h2 className="text-2xl md:text-3xl font-bold text-white">{t.title}</h2>
+                        <h2 className="text-2xl md:text-3xl font-bold text-white">
+                            {lang === 'en' ? (
+                                <>How <span className="text-transparent bg-clip-text bg-gradient-to-r from-neon-purple to-neon-cyan">implementation</span> starts</>
+                            ) : (
+                                <>С чего начинается <span className="text-transparent bg-clip-text bg-gradient-to-r from-neon-purple to-neon-cyan">внедрение</span></>
+                            )}
+                        </h2>
                         <p className="text-slate-400 font-light mt-3">
                             {t.subtitle}
                         </p>

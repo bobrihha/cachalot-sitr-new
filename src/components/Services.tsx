@@ -56,7 +56,13 @@ const Services = ({ lang }: ServicesProps) => {
             <div className="max-w-7xl mx-auto px-6">
                 <div className="text-center mb-16">
                     <span className="text-neon-cyan tracking-widest uppercase text-sm font-bold">{t.label}</span>
-                    <h2 className="text-3xl md:text-4xl font-bold text-white mt-2">{t.title}</h2>
+                    <h2 className="text-3xl md:text-4xl font-bold text-white mt-2">
+                        {lang === 'en' ? (
+                            <>What <span className="text-transparent bg-clip-text bg-gradient-to-r from-neon-purple to-neon-cyan">AI can take over</span> in your business</>
+                        ) : (
+                            <>Что <span className="text-transparent bg-clip-text bg-gradient-to-r from-neon-purple to-neon-cyan">AI может</span> взять на себя в вашем бизнесе</>
+                        )}
+                    </h2>
                 </div>
 
                 <div className="grid md:grid-cols-3 gap-8">

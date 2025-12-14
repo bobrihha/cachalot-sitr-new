@@ -211,7 +211,7 @@ const PricingFormats = ({ lang }: PricingFormatsProps) => {
                         >
                             <div className="flex items-start justify-between gap-4">
                                 <div>
-                                    <div className="text-white font-bold text-2xl">{f.name}</div>
+                                    <div className="text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-neon-purple to-neon-cyan">{f.name}</div>
                                     <div className="text-slate-400 font-light mt-1">{f.subtitle}</div>
                                 </div>
                                 <div className="w-10 h-10 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center">

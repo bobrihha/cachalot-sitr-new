@@ -23,3 +23,15 @@ dist-ssr
 *.sln
 *.sw?
 .env
+
+# Backend specific
+cachalot.db
+backend/__pycache__/
+backend/.venv/
+__pycache__/
+*.pyc
+
+# Temp scripts
+check_*.py
+debug_*
+*.local

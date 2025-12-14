@@ -1,186 +1,187 @@
 import { useState, useRef, useEffect } from 'react';
-import { MessageCircle, X, Send } from 'lucide-react';
-import { AnimatePresence, motion } from 'framer-motion';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
-import type { Lang } from '../site';
 
-type Message = {
-    text: string;
-    isUser: boolean;
-    seoData?: unknown;
-};
+// You might want to move these types to a separate file
+interface Message {
+    role: 'user' | 'assistant';
+    content: string;
+}
 
-const ChatWidget = () => {
-    const lang = ((window as unknown as { __APP_LANG__?: string }).__APP_LANG__ === 'en' ? 'en' : 'ru') as Lang;
-    const t = lang === 'en'
-        ? {
-            hello: 'Hi! I’m a digital assistant. Ask a question and I’ll help you find an answer.',
-            typing: 'Typing…',
-            placeholder: 'Type your question…',
-            networkError: 'Connection error. Please try again later.',
-            online: 'ONLINE'
-        }
-        : {
-            hello: 'Здравствуйте! Я цифровой помощник. Задайте вопрос, и я найду ответ в нашей базе знаний.',
-            typing: 'Печатает…',
-            placeholder: 'Введите вопрос...',
-            networkError: 'Ошибка соединения с сервером.',
-            online: 'ONLINE'
-        };
-
+export const ChatWidget = () => {
     const [isOpen, setIsOpen] = useState(false);
-    const [messages, setMessages] = useState<Message[]>([
-        { text: t.hello, isUser: false }
-    ]);
-    const [inputValue, setInputValue] = useState("");
+    const [messages, setMessages] = useState<Message[]>([]);
+    const [input, setInput] = useState('');
     const [isLoading, setIsLoading] = useState(false);
+    const [userId, setUserId] = useState<string | null>(localStorage.getItem('cachalot_user_id'));
     const messagesEndRef = useRef<HTMLDivElement>(null);
 
-    // Persist unique User ID
-    const [userId, setUserId] = useState("");
-
-    useEffect(() => {
-        let storedId = localStorage.getItem("chat_user_id");
-        if (!storedId) {
-            storedId = "web_" + Math.random().toString(36).substr(2, 9);
-            localStorage.setItem("chat_user_id", storedId);
-        }
-        setUserId(storedId);
-    }, []);
-
     const scrollToBottom = () => {
-        messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+        messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
     };
 
     useEffect(() => {
         scrollToBottom();
-    }, [messages, isOpen]);
+    }, [messages]);
 
-    const handleSend = async () => {
-        if (!inputValue.trim()) return;
+    const sendMessage = async () => {
+        if (!input.trim()) return;
 
-        const userMsg = { text: inputValue, isUser: true };
+        const userMsg: Message = { role: 'user', content: input };
         setMessages(prev => [...prev, userMsg]);
-        setInputValue("");
+        setInput('');
         setIsLoading(true);
 
+        let currentUserId = userId;
+        if (!currentUserId) {
+            currentUserId = 'web_' + Math.random().toString(36).substr(2, 9);
+            setUserId(currentUserId);
+            localStorage.setItem('cachalot_user_id', currentUserId);
+        }
+
         try {
-            // Use local PHP proxy to avoid Mixed Content (HTTPS -> HTTP)
+            // In production, use the PHP proxy to avoid Mixed Content issues (HTTPS -> HTTP)
             const response = await fetch('/proxy.php', {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+                headers: {
+                    'Content-Type': 'application/json',
+                },
                 body: JSON.stringify({
-                    user_id: userId,
-                    message: userMsg.text,
-                    username: "WebGuest"
-                })
+                    message: userMsg.content,
+                    user_id: currentUserId
+                }),
             });
 
-            if (!response.ok) throw new Error("Network error");
+            if (!response.ok) {
+                throw new Error('Network response was not ok');
+            }
 
             const data = await response.json();
 
-            // The API returns { response: "AI text..." }
-            const botText = data.response || "Нет ответа";
+            // Save user ID if it's new
+            if (data.user_id && !userId) {
+                setUserId(data.user_id);
+                localStorage.setItem('cachalot_user_id', data.user_id);
+            }
 
-            setMessages(prev => [...prev, { text: botText, isUser: false }]);
-
+            const assistantMsg: Message = { role: 'assistant', content: data.response };
+            setMessages(prev => [...prev, assistantMsg]);
         } catch (error) {
-            console.error(error);
-            setMessages(prev => [...prev, { text: t.networkError, isUser: false }]);
+            console.error('Error sending message:', error);
+            setMessages(prev => [...prev, { role: 'assistant', content: 'Извините, произошла ошибка. Попробуйте позже.' }]);
         } finally {
             setIsLoading(false);
         }
     };
 
-    const handleKeyDown = (e: React.KeyboardEvent) => {
-        if (e.key === 'Enter') handleSend();
-    };
-
     return (
-        <div className="fixed bottom-6 right-6 z-50 flex flex-col items-end font-sans">
-            <AnimatePresence>
-                {isOpen && (
-                    <motion.div
-                        initial={{ opacity: 0, y: 20, scale: 0.9 }}
-                        animate={{ opacity: 1, y: 0, scale: 1 }}
-                        exit={{ opacity: 0, y: 20, scale: 0.9 }}
-                        className="mb-4 w-[340px] h-[500px] bg-ocean-900/95 backdrop-blur-xl border border-neon-cyan/30 rounded-2xl shadow-2xl flex flex-col overflow-hidden"
-                    >
-                        {/* Шапка */}
-                        <div className="bg-gradient-to-r from-cyan-900 to-blue-900 p-4 flex justify-between items-center border-b border-white/10">
-                            <div className="flex items-center gap-3">
-                                <div className="w-8 h-8 rounded-full bg-neon-cyan flex items-center justify-center font-bold text-black text-xs">AI</div>
-                                <div>
-                                    <h4 className="text-white font-bold text-sm">Cachalot Assistant</h4>
-                                    <span className="text-[10px] text-green-400 flex items-center gap-1">● {t.online}</span>
+        <div className="fixed bottom-5 right-5 z-50">
+            {/* Toggle Button */}
+            <button
+                onClick={() => setIsOpen(!isOpen)}
+                className="w-14 h-14 bg-gradient-to-r from-cyan-500 to-blue-600 rounded-full flex items-center justify-center text-white shadow-lg hover:opacity-90 transition"
+            >
+                {isOpen ? (
+                    <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                ) : (
+                    <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" />
+                    </svg>
+                )}
+            </button>
+
+            {/* Chat Window */}
+            {isOpen && (
+                <div className="absolute bottom-16 right-0 w-80 sm:w-96 h-[500px] bg-white rounded-lg shadow-xl flex flex-col border border-gray-200 overflow-hidden">
+                    {/* Header */}
+                    <div className="bg-gradient-to-r from-cyan-500 to-blue-600 text-white p-4 font-semibold text-center">
+                        Cachalot AI Assistant
+                    </div>
+
+                    {/* Messages Area */}
+                    <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-gray-50">
+                        {messages.length === 0 && (
+                            <div className="text-center text-gray-500 mt-10 text-sm">
+                                <p className="mb-4">
+                                    Здравствуйте! Я AI-консультант Cachalot.<br />
+                                    Помогаю бизнесу понять, как AI может упростить работу и коммуникации.
+                                </p>
+                                <p>
+                                    Hello! I’m the Cachalot AI consultant.<br />
+                                    I help businesses see how AI can simplify work and communication.
+                                </p>
+                            </div>
+                        )}
+                        {messages.map((msg, idx) => (
+                            <div
+                                key={idx}
+                                className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}
+                            >
+                                <div
+                                    className={`max-w-[85%] rounded-2xl px-4 py-2 text-sm leading-relaxed ${msg.role === 'user'
+                                        ? 'bg-gradient-to-r from-cyan-500 to-blue-600 text-white rounded-br-none'
+                                        : 'bg-white text-gray-800 border border-gray-200 rounded-bl-none shadow-sm'
+                                        }`}
+                                >
+                                    {msg.role === 'user' ? (
+                                        msg.content
+                                    ) : (
+                                        <div className="markdown-body">
+                                            <ReactMarkdown
+                                                remarkPlugins={[remarkGfm]}
+                                                components={{
+                                                    ul: ({ node, ...props }) => <ul className="list-disc ml-4 my-2" {...props} />,
+                                                    ol: ({ node, ...props }) => <ol className="list-decimal ml-4 my-2" {...props} />,
+                                                    li: ({ node, ...props }) => <li className="my-1" {...props} />,
+                                                    p: ({ node, ...props }) => <p className="mb-2 last:mb-0" {...props} />,
+                                                    strong: ({ node, ...props }) => <strong className="font-semibold" {...props} />,
+                                                    a: ({ node, ...props }) => <a className="text-blue-500 hover:underline" target="_blank" {...props} />
+                                                }}
+                                            >
+                                                {msg.content}
+                                            </ReactMarkdown>
+                                        </div>
+                                    )}
                                 </div>
                             </div>
-                            <button onClick={() => setIsOpen(false)} className="text-white/70 hover:text-white"><X size={18} /></button>
-                        </div>
-
-                        {/* Тело чата */}
-                        <div className="flex-1 p-4 bg-black/20 overflow-y-auto space-y-4">
-                            {messages.map((msg, idx) => (
-                                <div key={idx} className={`flex ${msg.isUser ? 'justify-end' : 'justify-start'}`}>
-                                    <div
-                                        className={`max-w-[85%] p-3 rounded-2xl text-sm ${msg.isUser
-                                            ? 'bg-neon-cyan/20 text-white rounded-br-none border border-neon-cyan/30'
-                                            : 'bg-white/10 text-slate-200 rounded-tl-none border border-white/5 [&>p]:mb-2 [&>p:last-child]:mb-0 [&>a]:text-neon-cyan [&>a]:underline'
-                                            }`}
-                                    >
-                                        <ReactMarkdown
-                                            remarkPlugins={[remarkGfm]}
-                                            components={{
-                                                a: ({ node, ...props }) => {
-                                                    void node;
-                                                    return <a {...props} target="_blank" rel="noopener noreferrer" className="text-neon-cyan underline break-all" />;
-                                                }
-                                            }}
-                                        >
-                                            {msg.text}
-                                        </ReactMarkdown>
-                                    </div>
+                        ))}
+                        {isLoading && (
+                            <div className="flex justify-start">
+                                <div className="bg-gray-200 text-gray-500 rounded-2xl px-4 py-2 rounded-bl-none text-sm">
+                                    Печатает...
                                 </div>
-                            ))}
-                            {isLoading && (
-                                <div className="flex justify-start">
-                                    <div className="bg-white/10 p-3 rounded-2xl rounded-tl-none text-sm text-slate-400 italic">
-                                        {t.typing}
-                                    </div>
-                                </div>
-                            )}
-                            <div ref={messagesEndRef} />
-                        </div>
+                            </div>
+                        )}
+                        <div ref={messagesEndRef} />
+                    </div>
 
-                        {/* Ввод */}
-                        <div className="p-3 bg-ocean-950 border-t border-white/10 flex gap-2">
+                    {/* Input Area */}
+                    <div className="p-4 bg-white border-t border-gray-200">
+                        <div className="flex gap-2">
                             <input
                                 type="text"
-                                value={inputValue}
-                                onChange={(e) => setInputValue(e.target.value)}
-                                onKeyDown={handleKeyDown}
-                                placeholder={t.placeholder}
-                                className="flex-1 bg-transparent text-white text-sm outline-none placeholder-slate-600"
+                                value={input}
+                                onChange={(e) => setInput(e.target.value)}
+                                onKeyDown={(e) => e.key === 'Enter' && sendMessage()}
+                                placeholder="Ваш вопрос..."
+                                className="flex-1 border border-gray-300 rounded-full px-4 py-2 focus:outline-none focus:border-cyan-500 text-gray-900 bg-white placeholder-gray-500"
                             />
                             <button
-                                onClick={handleSend}
+                                onClick={sendMessage}
                                 disabled={isLoading}
-                                className="p-2 bg-neon-cyan/20 text-neon-cyan rounded-lg hover:bg-neon-cyan/40 disabled:opacity-50"
+                                className="bg-gradient-to-r from-cyan-500 to-blue-600 text-white p-2 rounded-full hover:opacity-90 disabled:opacity-50 transition"
                             >
-                                <Send size={18} />
+                                <svg className="w-5 h-5 translate-x-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
+                                </svg>
                             </button>
                         </div>
-                    </motion.div>
-                )}
-            </AnimatePresence>
-
-            <button onClick={() => setIsOpen(!isOpen)} className="w-14 h-14 rounded-full bg-gradient-to-r from-neon-cyan to-blue-600 flex items-center justify-center text-white shadow-[0_0_20px_rgba(6,182,212,0.5)] hover:scale-110 transition-transform">
-                {isOpen ? <X /> : <MessageCircle className="animate-pulse" />}
-            </button>
+                    </div>
+                </div>
+            )}
         </div>
     );
 };
 
-export default ChatWidget;

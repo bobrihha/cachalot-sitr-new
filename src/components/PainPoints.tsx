@@ -54,7 +54,11 @@ const PainPoints = ({ lang }: PainPointsProps) => {
                     >
                         <span className="text-neon-cyan tracking-widest uppercase text-sm font-bold">{t.label}</span>
                         <h2 className="text-3xl md:text-5xl font-bold text-white leading-tight">
-                            {t.title}
+                            {lang === 'en' ? (
+                                <>Where <span className="text-transparent bg-clip-text bg-gradient-to-r from-neon-purple to-neon-cyan">order breaks down</span></>
+                            ) : (
+                                <>Где бизнес теряет <span className="text-transparent bg-clip-text bg-gradient-to-r from-neon-purple to-neon-cyan">порядок и контроль</span></>
+                            )}
                         </h2>
                         <p className="text-slate-400 font-light leading-relaxed max-w-xl">
                             {t.subtitle}

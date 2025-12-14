@@ -1,97 +1,103 @@
-from fastapi import FastAPI, HTTPException
-from pydantic import BaseModel
+from fastapi import FastAPI, Depends, HTTPException, Security
 from fastapi.middleware.cors import CORSMiddleware
-from openai import OpenAI
-import os
-import json
+from fastapi.security.api_key import APIKeyHeader
+from starlette.status import HTTP_403_FORBIDDEN
+from fastapi import APIRouter # Added APIRouter
 from dotenv import load_dotenv
-from bs4 import BeautifulSoup
+import os
 
-# Load environment variables
 load_dotenv()
-load_dotenv("../.env") # Try looking in root as well
+load_dotenv(os.path.join(os.path.dirname(__file__), "../.env"))
+from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy import select
+from .database import get_db
+from .schemas import ChatRequest, PromptUpdate, Prompt as PromptSchema
+from .services import UserService, AIService
+from .models import UserSource, Prompt, User
+import uuid
 
 app = FastAPI()
 
-# Enable CORS for frontend
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"], # In production, specify the exact domain
+    allow_origins=["*"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
-API_KEY = os.environ.get("OPENAI_API_KEY")
-client = OpenAI(api_key=API_KEY)
-
-class ChatRequest(BaseModel):
-    message: str
-
-def clean_html(html_text):
-    if not isinstance(html_text, str): return ""
-    soup = BeautifulSoup(html_text, "html.parser")
-    for script in soup(["script", "style"]): script.extract()
-    text = soup.get_text(separator=' ')
-    return " ".join(text.split())[:3500]
-
-def analyze_deeply(text):
-    # Simplified prompt for chat context - treating input as article content/title mix
-    prompt = f"""
-    Ты архитектор спортивной энциклопедии. Роль: Строгий редактор.
-    
-    ТЕКСТ ПОЛЬЗОВАТЕЛЯ:
-    {text}
-    
-    ЗАДАЧА:
-    Проанализируй текст так, как будто это заголовок или краткое содержание статьи.
-    Построй иерархию из 3-х уровней.
-    
-    !!! КРИТИЧЕСКИ ВАЖНОЕ ПРАВИЛО !!!
-    Если статья описывает КОНКРЕТНОЕ УПРАЖНЕНИЕ (подтягивания, жим, присед, бег) или ПРОГРАММУ ТРЕНИРОВОК — это ВСЕГДА "Level 1 = Виды спорта" -> "Level 2 = Силовые виды" (или Фитнес).
-    НЕ СТАВЬ упражнения в "Медицину" или "Науку"!
-    
-    СТРУКТУРА:
-    1. LEVEL 1 (Корневой). Строго один из:
-       [Виды спорта, История и наука, Соревнования, Персоны в спорте, Организации].
-       
-    2. LEVEL 2 (Направление).
-       - Если Lvl1="Виды спорта" -> Силовые виды, Единоборства, Легкая атлетика, Фитнес.
-       - Если Lvl1="История и наука" -> Спортивное питание, Фармакология, Спортивная медицина (только болезни/травмы!), Физиология.
-    
-    3. LEVEL 3 (Тег). Конкретный предмет статьи.
-    
-    Ответ верни строго в JSON:
-    {{
-        "lvl1": "...",
-        "lvl2": "...",
-        "lvl3": "...",
-        "new_h1": "...",
-        "seo_title": "...",
-        "seo_description": "..."
-    }}
-    """
-
-    try:
-        response = client.chat.completions.create(
-            model="gpt-4o-mini",
-            messages=[{"role": "user", "content": prompt}],
-            temperature=0.2, 
-            response_format={"type": "json_object"}
-        )
-        return json.loads(response.choices[0].message.content)
-    except Exception as e:
-        print(f"Error AI: {e}")
-        return {"error": str(e)}
-
 @app.post("/api/chat")
-async def chat_endpoint(request: ChatRequest):
-    if not API_KEY:
-        raise HTTPException(status_code=500, detail="OPENAI_API_KEY not found in environment variables")
+async def chat(request: ChatRequest, db: AsyncSession = Depends(get_db)):
+    # 1. Identify User
+    user_source = UserSource.WEB
+    external_id = request.user_id 
+    if not external_id:
+        # Generate a temporary session ID if none provided
+        external_id = str(uuid.uuid4())
     
-    result = analyze_deeply(request.message)
-    return result
+    user_service = UserService(db)
+    user = await user_service.get_or_create_user(external_id=external_id, source=user_source)
+    
+    # 2. Save User Message
+    await user_service.add_message(user.id, "user", request.message)
+    
+    # 3. Generate Answer
+    ai_service = AIService(db)
+    response_text = await ai_service.generate_response(user, request.message)
+    
+    # 4. Save Assistant Message
+    await user_service.add_message(user.id, "assistant", response_text)
+    
+    return {"response": response_text, "user_id": external_id}
+
+# --- SECURITY ---
+ADMIN_SECRET = os.getenv("ADMIN_SECRET", "cachalot2025")
+API_KEY_HEADER = APIKeyHeader(name="X-Cachalot-Secret", auto_error=False)
+
+async def verify_admin(secret: str = Security(API_KEY_HEADER)):
+    if secret != ADMIN_SECRET:
+        raise HTTPException(
+            status_code=HTTP_403_FORBIDDEN, detail="Could not validate credentials"
+        )
+    return secret
+
+# --- ADMIN ROUTER ---
+admin_router = APIRouter(prefix="/api/admin", tags=["admin"], dependencies=[Depends(verify_admin)])
+
+@admin_router.get("/prompts/{channel}")
+async def get_prompt(channel: str, db: AsyncSession = Depends(get_db)):
+    result = await db.execute(select(Prompt).where(Prompt.channel == channel))
+    prompt = result.scalars().first()
+    if not prompt:
+        raise HTTPException(status_code=404, detail="Prompt not found")
+    return prompt
+
+@admin_router.post("/prompts/{channel}")
+async def update_prompt(channel: str, update: PromptUpdate, db: AsyncSession = Depends(get_db)):
+    result = await db.execute(select(Prompt).where(Prompt.channel == channel))
+    prompt = result.scalars().first()
+    
+    if not prompt:
+        prompt = Prompt(channel=channel, content=update.content, is_active=True)
+        db.add(prompt)
+    else:
+        if update.content:
+            prompt.content = update.content
+        if update.is_active is not None:
+            prompt.is_active = update.is_active
+            
+    await db.commit()
+    await db.refresh(prompt)
+    return prompt
+
+@admin_router.get("/users")
+async def get_users(db: AsyncSession = Depends(get_db)):
+    result = await db.execute(select(User).order_by(User.created_at.desc()))
+    users = result.scalars().all()
+    return users
+
+app.include_router(admin_router)
 
 if __name__ == "__main__":
     import uvicorn
-    uvicorn.run(app, host="0.0.0.0", port=8000)
+    uvicorn.run(app, host="0.0.0.0", port=8002)
