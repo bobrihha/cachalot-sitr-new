@@ -47,3 +47,6 @@ secret.key
 .venv/
 venv/
 node_modules/
+!.env.example
+!.env.sample
+!.env.template
