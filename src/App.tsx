@@ -14,6 +14,8 @@ import Footer from './components/Footer';
 import { approachPath, homePath, type Lang, type Page } from './site';
 import ModulesGrid from './components/ModulesGrid';
 import MemorySection from './components/MemorySection';
+import ParticleGrid from './components/ParticleGrid';
+import SectionDivider from './components/SectionDivider';
 
 type AppProps = {
     lang: Lang;
@@ -50,6 +52,7 @@ function App({ lang, page }: AppProps) {
 
             {/* Глобальный фон */}
             <OceanBackground />
+            <ParticleGrid />
 
             {/* Навигация */}
             <nav className="fixed top-0 left-0 w-full z-40 px-6 py-4 flex justify-between items-center bg-ocean-950/80 backdrop-blur-md border-b border-white/5 transition-all">
@@ -89,13 +92,17 @@ function App({ lang, page }: AppProps) {
             ) : (
                 <main className="relative z-10">
                     <Hero lang={lang} />
+                    <SectionDivider type="wave" className="-mt-16 relative z-20 text-ocean-950" />
                     <PainPoints lang={lang} />
+                    <SectionDivider type="diagonal" flip className="text-ocean-950/50" />
                     <Services lang={lang} />
+                    <SectionDivider type="circuit" className="text-ocean-950" />
                     <Cases lang={lang} />
 
                     <SolutionScenarios lang={lang} />
 
                     <GettingStarted lang={lang} />
+                    <SectionDivider type="wave" flip className="text-ocean-950" />
 
                     <ModulesGrid lang={lang} />
                     <MemorySection lang={lang} />

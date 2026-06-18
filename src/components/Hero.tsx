@@ -65,7 +65,7 @@ const Hero = ({ lang }: HeroProps) => {
                     initial={{ opacity: 0, y: 30 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.8, delay: 0.2 }}
-                    className="text-3xl md:text-5xl lg:text-6xl font-black text-white tracking-tight"
+                    className="text-3xl md:text-5xl lg:text-6xl font-black text-white tracking-tight glitch-hover cursor-default"
                 >
                     {t.h1}
                 </motion.h1>
@@ -96,7 +96,7 @@ const Hero = ({ lang }: HeroProps) => {
                     transition={{ duration: 0.8, delay: 0.6 }}
                     className="flex flex-col sm:flex-row gap-4 justify-center items-center pt-8"
                 >
-                    <a href="#ai-architect" className="px-8 py-4 bg-neon-cyan text-ocean-950 font-bold text-lg rounded-xl hover:bg-cyan-400 transition-all shadow-[0_0_20px_rgba(6,182,212,0.4)] hover:scale-105">
+                    <a href="#ai-architect" className="px-8 py-4 bg-neon-cyan text-ocean-950 font-bold text-lg rounded-xl hover:bg-cyan-400 transition-all shadow-[0_0_20px_rgba(6,182,212,0.4)] hover:scale-105 shimmer relative overflow-hidden">
                         {t.primary}
                     </a>
                     <a href="#cases" className="px-8 py-4 border border-slate-700 text-slate-300 font-medium text-lg rounded-xl hover:bg-white/5 hover:border-neon-cyan/50 transition-all backdrop-blur-sm">
