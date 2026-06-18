@@ -32,8 +32,8 @@ $ch = curl_init($url);
 curl_setopt($ch, CURLOPT_CUSTOMREQUEST, $method);
 curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
 curl_setopt($ch, CURLOPT_POSTFIELDS, $inputData);
-// Timeout to prevent hanging
-curl_setopt($ch, CURLOPT_TIMEOUT, 30);
+// Timeout for AI generation (can take up to 60 seconds)
+curl_setopt($ch, CURLOPT_TIMEOUT, 120);
 
 // Forward Headers
 $forwardHeaders = [

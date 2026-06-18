@@ -7,6 +7,7 @@ import GettingStarted from './components/GettingStarted';
 import PricingFormats from './components/PricingFormats';
 import { ChatWidget } from './components/ChatWidget';
 import ApproachPage from './components/ApproachPage';
+import ParkManagerPage from './components/ParkManagerPage';
 import Services from './components/Services';
 import Cases from './components/Cases';
 import { AdminPanel } from './components/AdminPanel';
@@ -14,16 +15,19 @@ import Footer from './components/Footer';
 import { approachPath, homePath, type Lang, type Page } from './site';
 import ModulesGrid from './components/ModulesGrid';
 import MemorySection from './components/MemorySection';
+import { ScrollTransitionLayers } from './components/ScrollTransitionLayers';
 
 type AppProps = {
     lang: Lang;
     page: Page;
+    mode?: 'prod' | 'draft';
 };
 
-function App({ lang, page }: AppProps) {
+function App({ lang, page, mode = 'prod' }: AppProps) {
     const isApproachPage = page === 'approach';
-    const homeHref = homePath(lang);
-    const approachHref = approachPath(lang);
+    const isParksPage = page === 'parks';
+    const homeHref = homePath(lang, mode);
+    const approachHref = approachPath(lang, mode);
 
     const labels = lang === 'en'
         ? {
@@ -35,6 +39,9 @@ function App({ lang, page }: AppProps) {
         }
         : {
             approach: 'Подход',
+            parks: 'Парки',
+            services: 'Решения',
+            pricing: 'Цены',
             cases: 'Кейсы',
             cta: 'Подобрать AI-решение'
         };
@@ -51,6 +58,8 @@ function App({ lang, page }: AppProps) {
             {/* Глобальный фон */}
             <OceanBackground />
 
+            {mode === 'draft' && !isApproachPage ? <ScrollTransitionLayers /> : null}
+
             {/* Навигация */}
             <nav className="fixed top-0 left-0 w-full z-40 px-6 py-4 flex justify-between items-center bg-ocean-950/80 backdrop-blur-md border-b border-white/5 transition-all">
                 <a href={homeHref} className="text-xl font-bold tracking-widest text-white flex items-center gap-2 select-none">
@@ -58,6 +67,7 @@ function App({ lang, page }: AppProps) {
                 </a>
                 <div className="hidden md:flex gap-8 text-sm font-medium text-slate-400">
                     <a href={approachHref} className="hover:text-neon-cyan transition-colors">{labels.approach}</a>
+                    <a href="/parks/" className="hover:text-neon-cyan transition-colors">{labels.parks}</a>
                     <a href={isApproachPage ? `${homeHref}#services` : '#services'} className="hover:text-neon-cyan transition-colors">{labels.services}</a>
                     <a href={isApproachPage ? `${homeHref}#pricing` : '#pricing'} className="hover:text-neon-cyan transition-colors">{labels.pricing}</a>
                     <a href={isApproachPage ? `${homeHref}#cases` : '#cases'} className="hover:text-neon-cyan transition-colors">{labels.cases}</a>
@@ -65,14 +75,14 @@ function App({ lang, page }: AppProps) {
                 <div className="flex items-center gap-4">
                     <div className="hidden sm:flex items-center gap-2 text-xs font-medium text-slate-400">
                         <a
-                            href={isApproachPage ? '/approach/' : '/'}
+                            href={isApproachPage ? approachPath('ru', mode) : homePath('ru', mode)}
                             className={lang === 'ru' ? 'text-white' : 'hover:text-neon-cyan transition-colors'}
                         >
                             RU
                         </a>
                         <span className="text-slate-600">|</span>
                         <a
-                            href={isApproachPage ? '/en/approach/' : '/en/'}
+                            href={isApproachPage ? approachPath('en', mode) : homePath('en', mode)}
                             className={lang === 'en' ? 'text-white' : 'hover:text-neon-cyan transition-colors'}
                         >
                             EN
@@ -86,21 +96,27 @@ function App({ lang, page }: AppProps) {
 
             {isApproachPage ? (
                 <ApproachPage lang={lang} />
+            ) : isParksPage ? (
+                <ParkManagerPage lang={lang} />
             ) : (
                 <main className="relative z-10">
                     <Hero lang={lang} />
                     <PainPoints lang={lang} />
+                    {mode === 'draft' ? <div aria-hidden="true" className="h-px" data-transition="painpoints-services" /> : null}
                     <Services lang={lang} />
+                    {mode === 'draft' ? <div aria-hidden="true" className="h-px" data-transition="before-cases" /> : null}
                     <Cases lang={lang} />
 
                     <SolutionScenarios lang={lang} />
 
                     <GettingStarted lang={lang} />
 
+                    {mode === 'draft' ? <div aria-hidden="true" className="h-px" data-transition="before-modules" /> : null}
                     <ModulesGrid lang={lang} />
                     <MemorySection lang={lang} />
 
                     {/* AI Architect (главный вход) */}
+                    {mode === 'draft' ? <div aria-hidden="true" className="h-px" data-transition="before-ai-architect" /> : null}
                     <section id="ai-architect" className="py-28 md:py-32 relative">
                         <div className="max-w-7xl mx-auto px-4">
                             <SpecGenerator lang={lang} />
@@ -112,7 +128,7 @@ function App({ lang, page }: AppProps) {
             )}
 
             {/* Финальный блок контактов */}
-            <Footer lang={lang} page={page} />
+            <Footer lang={lang} page={page} mode={mode} />
 
             <ChatWidget />
         </div>

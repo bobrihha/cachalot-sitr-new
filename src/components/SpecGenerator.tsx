@@ -70,7 +70,8 @@ const SpecGenerator = ({ lang }: SpecGeneratorProps) => {
             placeholder: 'Example: An assistant that books customers into our calendar and sends reminders…',
             micro: 'Free. No commitments. Works for small businesses and teams.',
             loading: 'Generating…',
-            cta: 'Generate solution'
+            cta: 'Generate solution',
+            ctaDiscuss: 'Discuss with Team'
         }
         : {
             title: 'Подберите AI-решение под вашу задачу',
@@ -78,7 +79,8 @@ const SpecGenerator = ({ lang }: SpecGeneratorProps) => {
             placeholder: 'Например: Бот для автосервиса, который сам записывает клиентов в календаре Bitrix24 и напоминает о записи...',
             micro: 'Бесплатно. Без обязательств. Подходит для малого бизнеса и компаний.',
             loading: 'Генерирую…',
-            cta: 'Сформировать AI-решение'
+            cta: 'Сформировать AI-решение',
+            ctaDiscuss: 'Обсудить с командой'
         };
 
     return (
@@ -141,6 +143,16 @@ const SpecGenerator = ({ lang }: SpecGeneratorProps) => {
                         <div className="bg-black/20 p-6 rounded-xl border border-white/5 animate-fade-in text-left">
                             <div className="prose prose-invert prose-lg text-slate-300 font-light leading-relaxed prose-p:!text-slate-400 prose-p:font-light prose-p:leading-relaxed prose-headings:!text-slate-300 prose-strong:!text-slate-400 prose-li:!text-slate-400 max-w-none">
                                 <ReactMarkdown>{result}</ReactMarkdown>
+                            </div>
+
+                            <div className="mt-8 flex justify-center">
+                                <button
+                                    onClick={() => window.open('https://t.me/CACHALOT_ai', '_blank')}
+                                    className="px-6 py-3 bg-white/5 text-neon-cyan border border-neon-cyan/30 rounded-lg hover:bg-neon-cyan hover:text-ocean-950 hover:border-neon-cyan transition-all duration-300 font-bold text-sm flex items-center gap-2"
+                                >
+                                    {t.ctaDiscuss}
+                                    <Send size={16} />
+                                </button>
                             </div>
                         </div>
                     )}

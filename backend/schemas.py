@@ -60,3 +60,13 @@ class Prompt(PromptBase):
 
     class Config:
         from_attributes = True
+
+
+# --- AI Brief Generation (для SpecGenerator) ---
+class BriefRequest(BaseModel):
+    idea: str
+    lang: str = "ru"  # "ru" | "en"
+
+
+class BriefResponse(BaseModel):
+    text: str

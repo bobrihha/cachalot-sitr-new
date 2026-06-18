@@ -1,15 +1,16 @@
 import { Send, Mail, Github, MessageCircle } from 'lucide-react';
-import { approachPath, homePath, type Lang, type Page } from '../site';
+import { approachPath, homePath, type AppMode, type Lang, type Page } from '../site';
 
 type FooterProps = {
     lang: Lang;
     page: Page;
+    mode?: AppMode;
 };
 
-const Footer = ({ lang, page }: FooterProps) => {
+const Footer = ({ lang, page, mode = 'prod' }: FooterProps) => {
     const isApproachPage = page === 'approach';
-    const homeHref = homePath(lang);
-    const approachHref = approachPath(lang);
+    const homeHref = homePath(lang, mode);
+    const approachHref = approachPath(lang, mode);
     const t = lang === 'en'
         ? {
             title1: 'Ready to dive',
@@ -51,7 +52,7 @@ const Footer = ({ lang, page }: FooterProps) => {
                     {/* Кнопки контактов */}
                     <div className="flex flex-col sm:flex-row gap-4">
                         <a
-                            href="https://t.me/ТВОЙ_НИК"
+                            href="https://t.me/CACHALOT_ai"
                             target="_blank"
                             rel="noreferrer"
                             className="group flex items-center justify-center gap-3 px-8 py-4 bg-white/5 border border-white/10 rounded-xl text-white font-bold hover:bg-neon-cyan hover:text-ocean-950 hover:border-neon-cyan transition-all duration-300"
